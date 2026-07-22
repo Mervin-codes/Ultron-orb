@@ -150,6 +150,11 @@ export class VoiceAssistant {
     }
   }
 
+submitText(text: string): void {
+    this.callbacks.onResult?.(text);
+    void this.handleCommand(text);
+  }
+
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 

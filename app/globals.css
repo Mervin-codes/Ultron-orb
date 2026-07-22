@@ -284,3 +284,18 @@ body {
   width: 18px;
   height: 18px;
 }
+
+.text-command-input {
+  flex: 1;
+  background: rgba(255, 170, 48, 0.08);
+  border: 1px solid rgba(255, 170, 48, 0.4);
+  border-radius: 4px;
+  color: #ffcc66;
+  padding: 8px 10px;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.text-command-input::placeholder {
+  color: rgba(255, 204, 102, 0.4);
+}

@@ -90,6 +90,15 @@ export default function SettingsPanel({ open, settings, onChange, onClose }: Pro
             onChange={(e) => setNumber("zoomSensitivity", parseFloat(e.target.value))}
           />
         </div>
+
+        <div className="settings-row">
+          <label>Text command input</label>
+          <input
+            type="checkbox"
+            checked={settings.textInputEnabled}
+            onChange={() => toggle("textInputEnabled")}
+          />
+        </div>
       </div>
     </div>
   );

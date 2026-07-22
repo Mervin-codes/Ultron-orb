@@ -28,6 +28,7 @@ export default function JarvisOrb() {
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<GestureSettings>(() => loadSettings());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [textCommand, setTextCommand] = useState("");
 
   useEffect(() => {
     voiceRef.current = new VoiceAssistant({
@@ -41,6 +42,14 @@ export default function JarvisOrb() {
   const handleTalk = useCallback(() => {
     voiceRef.current?.startListening();
   }, []);
+
+  const handleTextSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const text = textCommand.trim();
+    if (!text) return;
+    voiceRef.current?.submitText(text);
+    setTextCommand("");
+  }, [textCommand]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -201,6 +210,21 @@ export default function JarvisOrb() {
             ⚙️
           </button>
         </div>
+
+        {settings.textInputEnabled && (
+          <form className="hud-row" onSubmit={handleTextSubmit}>
+            <input
+              type="text"
+              className="text-command-input"
+              placeholder="Type a command..."
+              value={textCommand}
+              onChange={(e) => setTextCommand(e.target.value)}
+            />
+            <button type="submit" className="hud-btn">
+              SEND
+            </button>
+          </form>
+        )}
       </div>
 
       <SettingsPanel
