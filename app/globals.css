@@ -314,3 +314,23 @@ body {
 .text-command-input::placeholder {
   color: rgba(255, 204, 102, 0.4);
 }
+
+.text-command-box {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 40;
+}
+
+.text-command-box .text-command-input {
+  width: 140px;
+  font-size: 0.7rem;
+  padding: 5px 8px;
+}
+
+.text-command-send {
+  font-size: 0.65rem;
+  padding: 5px 8px;
+}

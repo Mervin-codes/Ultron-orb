@@ -211,21 +211,22 @@ export default function JarvisOrb() {
           </button>
         </div>
 
-        {settings.textInputEnabled && (
-          <form className="hud-row" onSubmit={handleTextSubmit}>
-            <input
-              type="text"
-              className="text-command-input"
-              placeholder="Type a command..."
-              value={textCommand}
-              onChange={(e) => setTextCommand(e.target.value)}
-            />
-            <button type="submit" className="hud-btn">
-              SEND
-            </button>
-          </form>
-        )}
-      </div>
+        </div>
+
+      {settings.textInputEnabled && (
+        <form className="text-command-box" onSubmit={handleTextSubmit}>
+          <input
+            type="text"
+            className="text-command-input"
+            placeholder="Type a command..."
+            value={textCommand}
+            onChange={(e) => setTextCommand(e.target.value)}
+          />
+          <button type="submit" className="hud-btn text-command-send">
+            SEND
+          </button>
+        </form>
+      )}
 
       <SettingsPanel
         open={settingsOpen}
