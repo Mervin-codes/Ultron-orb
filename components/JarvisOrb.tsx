@@ -29,6 +29,7 @@ export default function JarvisOrb() {
   const [settings, setSettings] = useState<GestureSettings>(() => loadSettings());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [textCommand, setTextCommand] = useState("");
+  const [showTextBox, setShowTextBox] = useState(false);
 
   useEffect(() => {
     voiceRef.current = new VoiceAssistant({
@@ -213,7 +214,16 @@ export default function JarvisOrb() {
 
         </div>
 
-      {settings.textInputEnabled && (
+      <button
+        type="button"
+        className="text-toggle-btn"
+        onClick={() => setShowTextBox((v) => !v)}
+        aria-pressed={showTextBox}
+      >
+        💬
+      </button>
+
+      {showTextBox && (
         <form className="text-command-box" onSubmit={handleTextSubmit}>
           <input
             type="text"

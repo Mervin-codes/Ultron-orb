@@ -334,3 +334,21 @@ body {
   font-size: 0.65rem;
   padding: 5px 8px;
 }
+
+.text-toggle-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 41;
+  background: rgba(255, 170, 48, 0.15);
+  border: 1px solid rgba(255, 170, 48, 0.5);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+  color: #ffcc66;
+}
+
+.text-command-box {
+  top: 56px;
+}
