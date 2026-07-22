@@ -65,7 +65,7 @@ export class VoiceAssistant {
     this.recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript.trim();
       this.callbacks.onResult?.(transcript);
-      this.handleCommand(transcript);
+      void this.handleCommand(transcript);
     };
 
     this.recognition.onerror = (event: any) => {
@@ -130,7 +130,27 @@ export class VoiceAssistant {
     );
   }
 
-  private handleCommand(transcript: string) {
+  private async askAI(question: string): Promise<void> {
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.answer) {
+        this.speak("I couldn't reach my thinking process just now.");
+        return;
+      }
+
+      this.speak(data.answer);
+    } catch {
+      this.speak("Something went wrong reaching the AI service.");
+    }
+  }
+
+  private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
     if (cmd.includes("weather")) {
@@ -150,9 +170,9 @@ export class VoiceAssistant {
       this.speak(`Today is ${date}.`);
     } else if (cmd.includes("who are you")) {
       this.speak("I am Ultron. A being of pure thought and will.");
-    } else if (cmd.includes("what can you do") || cmd.includes("help")) {
+    } else if (cmd.includes("what can you do") || cmd === "help") {
       this.speak(
-        "I can check the weather, tell you the time and date, open YouTube or GitHub, and respond when you talk to me. Ask away.",
+        "I can check the weather, tell you the time and date, open YouTube or GitHub, and answer just about any question you ask me.",
       );
     } else if (cmd.includes("joke")) {
       const jokes = [
@@ -166,7 +186,7 @@ export class VoiceAssistant {
     } else if (cmd.includes("hello") || cmd.includes("hey")) {
       this.speak("Hello. I've been waiting.");
     } else {
-      this.speak("I heard you, but I don't have a response programmed for that yet.");
+      void this.askAI(transcript);
     }
   }
 
