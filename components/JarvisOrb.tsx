@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createOrbScene, type OrbSceneApi } from "@/lib/orbScene";
 import { HandTracker, type TrackerStatus } from "@/lib/handTracker";
+import { VoiceAssistant } from "@/lib/voiceAssistant";
+import { loadSettings, saveSettings, type GestureSettings } from "@/lib/settings";
+import SettingsPanel from "@/components/SettingsPanel";
 
 type CameraState = "off" | "starting" | "on" | "error";
 
@@ -18,10 +21,26 @@ export default function JarvisOrb() {
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<OrbSceneApi | null>(null);
   const trackerRef = useRef<HandTracker | null>(null);
-
+  const voiceRef = useRef<VoiceAssistant | null>(null);
+  const [voiceStatus, setVoiceStatus] = useState<"idle" | "listening" | "speaking">("idle");
   const [camera, setCamera] = useState<CameraState>("off");
   const [status, setStatus] = useState<TrackerStatus>({ hands: 0, mode: "idle" });
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<GestureSettings>(() => loadSettings());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    voiceRef.current = new VoiceAssistant({
+      onListenStart: () => setVoiceStatus("listening"),
+      onListenEnd: () => setVoiceStatus("idle"),
+      onSpeakStart: () => setVoiceStatus("speaking"),
+      onSpeakEnd: () => setVoiceStatus("idle"),
+    });
+  }, []);
+
+  const handleTalk = useCallback(() => {
+    voiceRef.current?.startListening();
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -56,14 +75,13 @@ export default function JarvisOrb() {
       onZoom: (factor) => sceneRef.current?.zoomBy(factor),
       onStatus: setStatus,
     });
+    tracker.updateSettings(settings);
     trackerRef.current = tracker;
 
     try {
       await tracker.start();
       setCamera("on");
     } catch (err) {
-      trackerRef.current = null;
-      tracker.stop();
       setCamera("error");
       setError(
         err instanceof DOMException && err.name === "NotAllowedError"
@@ -71,12 +89,18 @@ export default function JarvisOrb() {
           : "TRACKING INIT FAILED",
       );
     }
-  }, []);
+  }, [settings]);
 
   const toggleGestures = useCallback(() => {
     if (trackerRef.current) stopGestures();
     else void startGestures();
   }, [startGestures, stopGestures]);
+
+  const handleSettingsChange = useCallback((next: GestureSettings) => {
+    setSettings(next);
+    saveSettings(next);
+    trackerRef.current?.updateSettings(next);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -129,14 +153,13 @@ export default function JarvisOrb() {
           <div>
             <span className="key">G</span> hand gestures&nbsp;&nbsp;
             <span className="key">R</span> reset&nbsp;&nbsp;
-            <span className="key">+/−</span> zoom
+            <span className="key">+/-</span> zoom
           </div>
         )}
       </div>
 
       <div className="hud hud-controls">
         <div className={`camera-panel${cameraOn ? " visible" : ""}`}>
-          {/* Mirrored preview so it behaves like a mirror */}
           <video ref={videoRef} muted playsInline className="camera-video" />
           <canvas ref={overlayRef} width={208} height={156} className="camera-overlay" />
           <div className="camera-status">
@@ -164,13 +187,28 @@ export default function JarvisOrb() {
             +
           </button>
           <button type="button" className="hud-btn" onClick={() => sceneRef.current?.zoomOut()} aria-label="Zoom out">
-            −
+            -
           </button>
           <button type="button" className="hud-btn" onClick={() => sceneRef.current?.resetView()}>
             RESET
           </button>
         </div>
+        <div className="hud-row">
+          <button type="button" className="hud-btn" onClick={handleTalk} disabled={voiceStatus !== "idle"}>
+            {voiceStatus === "listening" ? "LISTENING..." : voiceStatus === "speaking" ? "SPEAKING..." : "🎤 TALK"}
+          </button>
+          <button type="button" className="hud-btn" onClick={() => setSettingsOpen(true)}>
+            ⚙️
+          </button>
+        </div>
       </div>
+
+      <SettingsPanel
+        open={settingsOpen}
+        settings={settings}
+        onChange={handleSettingsChange}
+        onClose={() => setSettingsOpen(false)}
+      />
     </>
   );
 }

@@ -233,3 +233,54 @@ body {
     display: none;
   }
 }
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.settings-panel {
+  background: #12100c;
+  border: 1px solid rgba(255, 170, 48, 0.4);
+  border-radius: 8px;
+  padding: 20px;
+  width: min(340px, 90vw);
+  color: #ffcc66;
+  font-family: monospace;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.settings-row label {
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.settings-row input[type="range"] {
+  width: 120px;
+}
+
+.settings-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}

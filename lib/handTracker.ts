@@ -3,25 +3,23 @@ import {
   HandLandmarker,
   type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
+import type { GestureSettings } from "@/lib/settings";
+import { DEFAULT_SETTINGS } from "@/lib/settings";
 
 const WASM_CDN =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
 const MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
-// Landmark indices (MediaPipe hand model)
 const WRIST = 0;
 const THUMB_TIP = 4;
 const INDEX_TIP = 8;
 const MIDDLE_MCP = 9;
 
-// Pinch hysteresis: thumb–index distance relative to hand size
 const PINCH_ON = 0.32;
 const PINCH_OFF = 0.45;
 
-// How strongly hand movement rotates the orb (radians per normalized unit)
 const ROTATE_SPEED = 5.0;
-// Smoothing factor for grab-point tracking (0..1, higher = snappier)
 const SMOOTHING = 0.4;
 
 export type GestureMode = "idle" | "spin" | "zoom";
@@ -32,9 +30,7 @@ export interface TrackerStatus {
 }
 
 export interface HandTrackerCallbacks {
-  /** Called when a single pinched hand drags: deltas in mirrored normalized coords. */
   onRotate(deltaTheta: number, deltaPhi: number): void;
-  /** Called when both hands pinch and spread/close: multiply camera distance by factor. */
   onZoom(factor: number): void;
   onStatus(status: TrackerStatus): void;
 }
@@ -46,7 +42,7 @@ interface Point {
 
 interface HandState {
   pinching: boolean;
-  grab: Point; // smoothed pinch midpoint, mirrored
+  grab: Point;
 }
 
 export class HandTracker {
@@ -58,12 +54,14 @@ export class HandTracker {
   private rafId = 0;
   private running = false;
   private lastVideoTime = -1;
+  private settings: GestureSettings = DEFAULT_SETTINGS;
 
-  // keyed by handedness label so state survives re-ordering between frames
   private handStates = new Map<string, HandState>();
   private prevMode: GestureMode = "idle";
   private prevSpinGrab: Point | null = null;
   private prevZoomDist: number | null = null;
+  private prevSingleZoomRatio: number | null = null;
+  private prevZoomAvgGrab: Point | null = null;
   private lastStatus: TrackerStatus = { hands: 0, mode: "idle" };
 
   constructor(
@@ -74,6 +72,10 @@ export class HandTracker {
     this.video = video;
     this.overlay = overlay;
     this.callbacks = callbacks;
+  }
+
+  updateSettings(settings: GestureSettings): void {
+    this.settings = settings;
   }
 
   async start(): Promise<void> {
@@ -96,7 +98,6 @@ export class HandTracker {
     try {
       this.landmarker = await HandLandmarker.createFromOptions(fileset, options);
     } catch {
-      // Some browsers/GPUs reject the GPU delegate — fall back to CPU
       this.landmarker = await HandLandmarker.createFromOptions(fileset, {
         ...options,
         baseOptions: { ...options.baseOptions, delegate: "CPU" as const },
@@ -119,6 +120,8 @@ export class HandTracker {
     this.prevMode = "idle";
     this.prevSpinGrab = null;
     this.prevZoomDist = null;
+    this.prevSingleZoomRatio = null;
+    this.prevZoomAvgGrab = null;
     const ctx = this.overlay.getContext("2d");
     ctx?.clearRect(0, 0, this.overlay.width, this.overlay.height);
     this.emitStatus({ hands: 0, mode: "idle" });
@@ -142,6 +145,7 @@ export class HandTracker {
     labels: string[],
   ): void {
     const pinchedGrabs: Point[] = [];
+    const pinchedRatios: number[] = [];
     const seen = new Set<string>();
 
     landmarks.forEach((lm, i) => {
@@ -152,7 +156,6 @@ export class HandTracker {
       if (handScale < 1e-6) return;
       const pinchRatio = dist2d(lm[THUMB_TIP], lm[INDEX_TIP]) / handScale;
 
-      // Mirrored so hand-right = screen-right from the user's perspective
       const raw: Point = {
         x: 1 - (lm[THUMB_TIP].x + lm[INDEX_TIP].x) / 2,
         y: (lm[THUMB_TIP].y + lm[INDEX_TIP].y) / 2,
@@ -164,7 +167,6 @@ export class HandTracker {
         this.handStates.set(label, state);
       }
 
-      // Hysteresis so the pinch doesn't flicker on/off at the threshold
       if (state.pinching && pinchRatio > PINCH_OFF) state.pinching = false;
       else if (!state.pinching && pinchRatio < PINCH_ON) state.pinching = true;
 
@@ -173,10 +175,12 @@ export class HandTracker {
         y: state.grab.y + (raw.y - state.grab.y) * SMOOTHING,
       };
 
-      if (state.pinching) pinchedGrabs.push(state.grab);
+      if (state.pinching) {
+        pinchedGrabs.push(state.grab);
+        pinchedRatios.push(pinchRatio);
+      }
     });
 
-    // Drop state for hands that left the frame
     for (const key of this.handStates.keys()) {
       if (!seen.has(key)) this.handStates.delete(key);
     }
@@ -184,34 +188,76 @@ export class HandTracker {
     const mode: GestureMode =
       pinchedGrabs.length >= 2 ? "zoom" : pinchedGrabs.length === 1 ? "spin" : "idle";
 
-    // Reset reference points on any mode change to avoid jumps
     if (mode !== this.prevMode) {
       this.prevSpinGrab = null;
       this.prevZoomDist = null;
+      this.prevSingleZoomRatio = null;
+      this.prevZoomAvgGrab = null;
       this.prevMode = mode;
     }
 
     if (mode === "spin") {
       const grab = pinchedGrabs[0];
-      if (this.prevSpinGrab) {
-        const dx = grab.x - this.prevSpinGrab.x;
-        const dy = grab.y - this.prevSpinGrab.y;
-        if (Math.abs(dx) > 1e-4 || Math.abs(dy) > 1e-4) {
-          this.callbacks.onRotate(dx * ROTATE_SPEED, dy * ROTATE_SPEED);
+      const ratio = pinchedRatios[0];
+
+      if (this.settings.singleHandSpin) {
+        if (this.prevSpinGrab) {
+          const dx = grab.x - this.prevSpinGrab.x;
+          const dy = grab.y - this.prevSpinGrab.y;
+          if (Math.abs(dx) > 1e-4 || Math.abs(dy) > 1e-4) {
+            this.callbacks.onRotate(
+              dx * ROTATE_SPEED * this.settings.rotateSensitivity,
+              dy * ROTATE_SPEED * this.settings.rotateSensitivity,
+            );
+          }
         }
       }
       this.prevSpinGrab = grab;
-    } else if (mode === "zoom") {
-      const d = Math.hypot(
-        pinchedGrabs[0].x - pinchedGrabs[1].x,
-        pinchedGrabs[0].y - pinchedGrabs[1].y,
-      );
-      if (this.prevZoomDist && d > 1e-4) {
-        // Spread hands apart -> factor < 1 -> camera moves closer
-        const factor = Math.min(1.18, Math.max(0.85, this.prevZoomDist / d));
-        this.callbacks.onZoom(factor);
+
+      if (this.settings.singleHandZoom) {
+        if (this.prevSingleZoomRatio !== null) {
+          const delta = ratio - this.prevSingleZoomRatio;
+          if (Math.abs(delta) > 0.01) {
+            const base = 1 + delta * 1.5 * this.settings.zoomSensitivity;
+            const factor = Math.min(1.08, Math.max(0.92, base));
+            this.callbacks.onZoom(factor);
+          }
+        }
       }
-      this.prevZoomDist = d;
+      this.prevSingleZoomRatio = ratio;
+    } else if (mode === "zoom") {
+      const avg: Point = {
+        x: (pinchedGrabs[0].x + pinchedGrabs[1].x) / 2,
+        y: (pinchedGrabs[0].y + pinchedGrabs[1].y) / 2,
+      };
+
+      if (this.settings.doubleHandSpin) {
+        if (this.prevZoomAvgGrab) {
+          const dx = avg.x - this.prevZoomAvgGrab.x;
+          const dy = avg.y - this.prevZoomAvgGrab.y;
+          if (Math.abs(dx) > 1e-4 || Math.abs(dy) > 1e-4) {
+            this.callbacks.onRotate(
+              dx * ROTATE_SPEED * this.settings.rotateSensitivity,
+              dy * ROTATE_SPEED * this.settings.rotateSensitivity,
+            );
+          }
+        }
+      }
+      this.prevZoomAvgGrab = avg;
+
+      if (this.settings.doubleHandZoom) {
+        const d = Math.hypot(
+          pinchedGrabs[0].x - pinchedGrabs[1].x,
+          pinchedGrabs[0].y - pinchedGrabs[1].y,
+        );
+        if (this.prevZoomDist && d > 1e-4) {
+          const base = this.prevZoomDist / d;
+          const scaled = 1 + (base - 1) * this.settings.zoomSensitivity;
+          const factor = Math.min(1.18, Math.max(0.85, scaled));
+          this.callbacks.onZoom(factor);
+        }
+        this.prevZoomDist = d;
+      }
     }
 
     this.emitStatus({ hands: landmarks.length, mode });
@@ -236,7 +282,6 @@ export class HandTracker {
     for (const lm of landmarks) {
       const thumb = lm[THUMB_TIP];
       const index = lm[INDEX_TIP];
-      // Overlay canvas sits on the mirrored video preview, so mirror x here too
       const tx = (1 - thumb.x) * width;
       const ty = thumb.y * height;
       const ix = (1 - index.x) * width;
