@@ -31,15 +31,19 @@ export default function JarvisOrb() {
   const [textCommand, setTextCommand] = useState("");
   const [showTextBox, setShowTextBox] = useState(false);
   const [replyText, setReplyText] = useState("");
-  useEffect(() => {
-     voiceRef.current = new VoiceAssistant({
+ 
+ useEffect(() => {
+    voiceRef.current = new VoiceAssistant({
       onListenStart: () => setVoiceStatus("listening"),
       onListenEnd: () => setVoiceStatus("idle"),
       onSpeakStart: () => setVoiceStatus("speaking"),
       onSpeakEnd: () => setVoiceStatus("idle"),
       onReply: (text) => setReplyText(text),
-    });     
-
+    });
+    voiceRef.current.enableAlwaysListening();
+    return () => {
+      voiceRef.current?.disableAlwaysListening();
+    };
   }, []);
 
   const handleTalk = useCallback(() => {

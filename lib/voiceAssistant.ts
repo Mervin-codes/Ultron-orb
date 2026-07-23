@@ -35,6 +35,7 @@ export class VoiceAssistant {
   private synth: SpeechSynthesis;
   private listening = false;
   private callbacks: VoiceCallbacks;
+  private autoListen = false;
 
   constructor(callbacks: VoiceCallbacks = {}) {
     this.callbacks = callbacks;
@@ -61,6 +62,9 @@ export class VoiceAssistant {
     this.recognition.onend = () => {
       this.listening = false;
       this.callbacks.onListenEnd?.();
+      if (this.autoListen && !this.synth.speaking) {
+        setTimeout(() => this.startListening(), 400);
+      }
     };
 
     this.recognition.onresult = (event: any) => {
@@ -73,6 +77,9 @@ export class VoiceAssistant {
       console.error("Speech recognition error:", event.error);
       this.listening = false;
       this.callbacks.onListenEnd?.();
+      if (this.autoListen && event.error !== "not-allowed") {
+        setTimeout(() => this.startListening(), 800);
+      }
     };
   }
 
@@ -98,7 +105,12 @@ export class VoiceAssistant {
     utterance.rate = 0.95;
     utterance.pitch = 0.8;
     utterance.onstart = () => this.callbacks.onSpeakStart?.();
-    utterance.onend = () => this.callbacks.onSpeakEnd?.();
+    utterance.onend = () => {
+      this.callbacks.onSpeakEnd?.();
+      if (this.autoListen) {
+        setTimeout(() => this.startListening(), 400);
+      }
+    };
 
     this.synth.speak(utterance);
   }
@@ -199,5 +211,15 @@ submitText(text: string): void {
 
   isListening() {
     return this.listening;
+  }
+
+  enableAlwaysListening() {
+    this.autoListen = true;
+    this.speak("How can I help you?");
+  }
+
+  disableAlwaysListening() {
+    this.autoListen = false;
+    this.stopListening();
   }
 }
