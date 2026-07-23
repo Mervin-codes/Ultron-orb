@@ -352,3 +352,20 @@ body {
 .text-command-box {
   top: 56px;
 }
+
+.reply-text-box {
+  position: fixed;
+  bottom: 90px;
+  left: 12px;
+  right: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+  background: rgba(10, 8, 6, 0.9);
+  border: 1px solid rgba(255, 170, 48, 0.4);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #ffcc66;
+  font-family: monospace;
+  font-size: 0.8rem;
+  z-index: 42;
+}

@@ -30,14 +30,16 @@ export default function JarvisOrb() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [textCommand, setTextCommand] = useState("");
   const [showTextBox, setShowTextBox] = useState(false);
-
+  const [replyText, setReplyText] = useState("");
   useEffect(() => {
-    voiceRef.current = new VoiceAssistant({
+     voiceRef.current = new VoiceAssistant({
       onListenStart: () => setVoiceStatus("listening"),
       onListenEnd: () => setVoiceStatus("idle"),
       onSpeakStart: () => setVoiceStatus("speaking"),
       onSpeakEnd: () => setVoiceStatus("idle"),
-    });
+      onReply: (text) => setReplyText(text),
+    });     
+
   }, []);
 
   const handleTalk = useCallback(() => {
@@ -222,6 +224,10 @@ export default function JarvisOrb() {
       >
         💬
       </button>
+
+      1{settings.showReplyText && replyText && (
+        <div className="reply-text-box">{replyText}</div>
+      )}     
 
       {showTextBox && (
         <form className="text-command-box" onSubmit={handleTextSubmit}>

@@ -5,6 +5,7 @@ type VoiceCallbacks = {
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
   onResult?: (transcript: string) => void;
+  onReply?: (text: string) => void;
 };
 
 const WEATHER_CODES: Record<number, string> = {
@@ -89,6 +90,7 @@ export class VoiceAssistant {
   }
 
   speak(text: string) {
+    this.callbacks.onReply?.(text);
     if (!this.synth) return;
     this.synth.cancel();
 

@@ -99,6 +99,16 @@ export default function SettingsPanel({ open, settings, onChange, onClose }: Pro
             onChange={() => toggle("textInputEnabled")}
           />
         </div>
+        
+        <div className="settings-row">
+          <label>Show reply as text</label>
+          <input
+            type="checkbox"
+            checked={settings.showReplyText}
+            onChange={() => toggle("showReplyText")}
+          />
+        </div>
+
       </div>
     </div>
   );

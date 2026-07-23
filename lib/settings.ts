@@ -7,6 +7,7 @@ export interface GestureSettings {
   rotateSensitivity: number;
   zoomSensitivity: number;
   textInputEnabled: boolean;
+  showReplyText: boolean;
 }
 
 export const DEFAULT_SETTINGS: GestureSettings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: GestureSettings = {
   rotateSensitivity: 1.0,
   zoomSensitivity: 1.0,
   textInputEnabled: false,
+  showReplyText: false,
 };
 
 const STORAGE_KEY = "ultron-orb-settings";
