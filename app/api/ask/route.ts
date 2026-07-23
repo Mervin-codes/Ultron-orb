@@ -8,39 +8,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No question provided" }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Server not configured" }, { status: 500 });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    const response = await fetch(url, {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        contents: [
+        model: "llama-3.3-70b-versatile",
+        messages: [
           {
-            parts: [
-              {
-                text: `You are Ultron, a calm and slightly dramatic AI assistant. Answer the following question concisely, in 2-3 sentences suitable for being spoken aloud: ${question}`,
-              },
-            ],
+            role: "system",
+            content:
+              "You are Ultron, a calm and slightly dramatic AI assistant. Answer concisely, in 2-3 sentences suitable for being spoken aloud.",
           },
+          { role: "user", content: question },
         ],
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("Gemini error:", errText);
+      console.error("Groq error:", errText);
       return NextResponse.json({ error: "AI request failed" }, { status: 502 });
     }
 
     const data = await response.json();
-    const answer =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      "I could not generate a response.";
+    const answer = data?.choices?.[0]?.message?.content ?? "I could not generate a response.";
 
     return NextResponse.json({ answer });
   } catch (err) {
