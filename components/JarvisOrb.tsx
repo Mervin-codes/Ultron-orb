@@ -31,8 +31,10 @@ export default function JarvisOrb() {
   const [textCommand, setTextCommand] = useState("");
   const [showTextBox, setShowTextBox] = useState(false);
   const [replyText, setReplyText] = useState("");
- 
- useEffect(() => {
+
+  const [alwaysOn, setAlwaysOn] = useState(false);
+
+  useEffect(() => {
     voiceRef.current = new VoiceAssistant({
       onListenStart: () => setVoiceStatus("listening"),
       onListenEnd: () => setVoiceStatus("idle"),
@@ -40,15 +42,20 @@ export default function JarvisOrb() {
       onSpeakEnd: () => setVoiceStatus("idle"),
       onReply: (text) => setReplyText(text),
     });
-    voiceRef.current.enableAlwaysListening();
     return () => {
       voiceRef.current?.disableAlwaysListening();
     };
   }, []);
 
   const handleTalk = useCallback(() => {
-    voiceRef.current?.startListening();
-  }, []);
+    if (!alwaysOn) {
+      setAlwaysOn(true);
+      voiceRef.current?.enableAlwaysListening();
+    } else {
+      setAlwaysOn(false);
+      voiceRef.current?.disableAlwaysListening();
+    }
+  }, [alwaysOn]);
 
   const handleTextSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -210,8 +217,8 @@ export default function JarvisOrb() {
           </button>
         </div>
         <div className="hud-row">
-          <button type="button" className="hud-btn" onClick={handleTalk} disabled={voiceStatus !== "idle"}>
-            {voiceStatus === "listening" ? "LISTENING..." : voiceStatus === "speaking" ? "SPEAKING..." : "🎤 TALK"}
+        <button type="button" className="hud-btn" onClick={handleTalk}>
+            {voiceStatus === "listening" ? "LISTENING..." : voiceStatus === "speaking" ? "SPEAKING..." : alwaysOn ? "🎤 ON (tap to stop)" : "🎤 TALK"}
           </button>
           <button type="button" className="hud-btn" onClick={() => setSettingsOpen(true)}>
             ⚙️

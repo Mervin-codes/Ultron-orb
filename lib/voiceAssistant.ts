@@ -89,7 +89,11 @@ export class VoiceAssistant {
       return;
     }
     if (this.listening) return;
-    this.recognition.start();
+    try {
+      this.recognition.start();
+    } catch (err) {
+      console.error("Could not start recognition:", err);
+    }
   }
 
   stopListening() {
