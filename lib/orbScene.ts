@@ -95,11 +95,11 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
   controls.enablePan = false;
 
   // ——— COLORS ———
-  const C_BRIGHT = 0xffaa30;
+  const C_BRIGHT = 0x3a8dff;
   const C_MID = 0xdd7700;
   const C_DIM = 0x884400;
   const C_FAINT = 0x553300;
-  const C_HOT = 0xffcc66;
+  const C_HOT = 0x6ab8ff;
 
   // ——— ORB ROOT ———
   // Every part of the orb (shells, core, orbiting debris, text, dust, rings)
@@ -590,7 +590,7 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
   dotC.width = dotC.height = 64;
   const dCtx = dotC.getContext("2d")!;
   const g = dCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, "rgba(255,170,48,1)");
+  g.addColorStop(0, "rgba(58,141,255,1)");
   g.addColorStop(0.2, "rgba(255,120,20,0.6)");
   g.addColorStop(0.5, "rgba(200,80,0,0.15)");
   g.addColorStop(1, "rgba(100,40,0,0)");

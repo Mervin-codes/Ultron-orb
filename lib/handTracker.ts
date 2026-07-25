@@ -291,14 +291,14 @@ export class HandTracker {
       const pinched =
         handScale > 1e-6 && dist2d(thumb, index) / handScale < PINCH_ON;
 
-      ctx.strokeStyle = pinched ? "#ffcc66" : "rgba(255,170,48,0.5)";
+      ctx.strokeStyle = pinched ? "#6ab8ff" : "rgba(58,141,255,0.5)";
       ctx.lineWidth = pinched ? 2 : 1;
       ctx.beginPath();
       ctx.moveTo(tx, ty);
       ctx.lineTo(ix, iy);
       ctx.stroke();
 
-      ctx.fillStyle = pinched ? "#ffcc66" : "rgba(255,170,48,0.7)";
+      ctx.fillStyle = pinched ? "#6ab8ff" : "rgba(58,141,255,0.7)";
       for (const [x, y] of [
         [tx, ty],
         [ix, iy],

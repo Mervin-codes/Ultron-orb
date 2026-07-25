@@ -74,7 +74,7 @@ body {
 .hud {
   position: fixed;
   z-index: 20;
-  color: #ffaa30;
+  color: #3a8dff;
   font-family: "Courier New", monospace;
   user-select: none;
 }
@@ -93,16 +93,16 @@ body {
   height: 44px;
   padding: 0 12px;
   background: rgba(20, 10, 0, 0.55);
-  border: 1px solid rgba(255, 170, 48, 0.45);
+  border: 1px solid rgba(58, 141, 255, 0.45);
   border-radius: 4px;
-  color: #ffaa30;
+  color: #3a8dff;
   font-family: "Courier New", monospace;
   font-size: 15px;
   font-weight: bold;
   letter-spacing: 0.08em;
   cursor: pointer;
   backdrop-filter: blur(2px);
-  text-shadow: 0 0 6px rgba(255, 170, 48, 0.7);
+  text-shadow: 0 0 6px rgba(58, 141, 255, 0.7);
   box-shadow: 0 0 12px rgba(255, 140, 20, 0.12) inset;
   transition:
     background 0.15s ease,
@@ -124,8 +124,8 @@ body {
 
 .hud-btn[aria-pressed="true"] {
   background: rgba(120, 60, 0, 0.6);
-  border-color: #ffcc66;
-  color: #ffcc66;
+  border-color: #6ab8ff;
+  color: #6ab8ff;
 }
 
 .hud-row {
@@ -140,14 +140,14 @@ body {
   line-height: 1.7;
   letter-spacing: 0.1em;
   opacity: 0.55;
-  text-shadow: 0 0 8px rgba(255, 170, 48, 0.6);
+  text-shadow: 0 0 8px rgba(58, 141, 255, 0.6);
   pointer-events: none;
 }
 
 .hud-hint .key {
   display: inline-block;
   padding: 0 4px;
-  border: 1px solid rgba(255, 170, 48, 0.5);
+  border: 1px solid rgba(58, 141, 255, 0.5);
   border-radius: 3px;
   margin-right: 4px;
   font-size: 10px;
@@ -159,7 +159,7 @@ body {
   font-size: 13px;
   letter-spacing: 0.35em;
   opacity: 0.7;
-  text-shadow: 0 0 10px rgba(255, 170, 48, 0.8);
+  text-shadow: 0 0 10px rgba(58, 141, 255, 0.8);
   pointer-events: none;
 }
 
@@ -169,7 +169,7 @@ body {
   margin-top: 6px;
   width: 120px;
   height: 1px;
-  background: linear-gradient(to right, rgba(255, 170, 48, 0.8), transparent);
+  background: linear-gradient(to right, rgba(58, 141, 255, 0.8), transparent);
 }
 
 .hud-error {
@@ -185,7 +185,7 @@ body {
   width: 208px;
   height: 156px;
   display: none;
-  border: 1px solid rgba(255, 170, 48, 0.45);
+  border: 1px solid rgba(58, 141, 255, 0.45);
   border-radius: 4px;
   overflow: hidden;
   background: #0a0500;
@@ -223,9 +223,9 @@ body {
   padding: 3px 6px;
   font-size: 10px;
   letter-spacing: 0.15em;
-  color: #ffcc66;
+  color: #6ab8ff;
   background: rgba(10, 5, 0, 0.65);
-  text-shadow: 0 0 6px rgba(255, 170, 48, 0.8);
+  text-shadow: 0 0 6px rgba(58, 141, 255, 0.8);
 }
 
 @media (max-width: 600px) {
@@ -246,11 +246,11 @@ body {
 
 .settings-panel {
   background: #12100c;
-  border: 1px solid rgba(255, 170, 48, 0.4);
+  border: 1px solid rgba(58, 141, 255, 0.4);
   border-radius: 8px;
   padding: 20px;
   width: min(340px, 90vw);
-  color: #ffcc66;
+  color: #6ab8ff;
   font-family: monospace;
 }
 
@@ -287,10 +287,10 @@ body {
 
 .text-command-input {
   flex: 1;
-  background: rgba(255, 170, 48, 0.08);
-  border: 1px solid rgba(255, 170, 48, 0.4);
+  background: rgba(58, 141, 255, 0.08);
+  border: 1px solid rgba(58, 141, 255, 0.4);
   border-radius: 4px;
-  color: #ffcc66;
+  color: #6ab8ff;
   padding: 8px 10px;
   font-family: monospace;
   font-size: 0.85rem;
@@ -302,10 +302,10 @@ body {
 
 .text-command-input {
   flex: 1;
-  background: rgba(255, 170, 48, 0.08);
-  border: 1px solid rgba(255, 170, 48, 0.4);
+  background: rgba(58, 141, 255, 0.08);
+  border: 1px solid rgba(58, 141, 255, 0.4);
   border-radius: 4px;
-  color: #ffcc66;
+  color: #6ab8ff;
   padding: 8px 10px;
   font-family: monospace;
   font-size: 0.85rem;
@@ -340,13 +340,13 @@ body {
   top: 12px;
   right: 12px;
   z-index: 41;
-  background: rgba(255, 170, 48, 0.15);
-  border: 1px solid rgba(255, 170, 48, 0.5);
+  background: rgba(58, 141, 255, 0.15);
+  border: 1px solid rgba(58, 141, 255, 0.5);
   border-radius: 50%;
   width: 36px;
   height: 36px;
   font-size: 1rem;
-  color: #ffcc66;
+  color: #6ab8ff;
 }
 
 .text-command-box {
@@ -361,10 +361,10 @@ body {
   max-width: 320px;
   margin: 0 auto;
   background: rgba(10, 8, 6, 0.9);
-  border: 1px solid rgba(255, 170, 48, 0.4);
+  border: 1px solid rgba(58, 141, 255, 0.4);
   border-radius: 6px;
   padding: 10px 14px;
-  color: #ffcc66;
+  color: #6ab8ff;
   font-family: monospace;
   font-size: 0.8rem;
   z-index: 42;
