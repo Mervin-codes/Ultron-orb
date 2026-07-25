@@ -1,4 +1,9 @@
-// lib/voiceAssistant.ts
+// 
+import { loadMemory, addFact, clearMemory } from "@/lib/memory";
+ lib/voiceAssistant.ts
+type VoiceCallbacks = {
+  
+ lib/voiceAssistant.ts
 type VoiceCallbacks = {
   onListenStart?: () => void;
   onListenEnd?: () => void;
@@ -146,15 +151,17 @@ export class VoiceAssistant {
         this.speak("I need location access to check the weather.");
       },
     );
-  }
+  } 
 
-  private async askAI(question: string): Promise<void> {
+    private async askAI(question: string): Promise<void> {
     try {
+      const memory = loadMemory();
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, facts: memory.facts }),
       });
+
       const data = await res.json();
 
       if (!res.ok || !data.answer) {
@@ -176,7 +183,21 @@ submitText(text: string): void {
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
-    if (cmd.includes("weather")) {
+  if (cmd.startsWith("remember that") || cmd.startsWith("remember i") || cmd.startsWith("remember my")) {
+      const fact = transcript.replace(/^remember that /i, "").replace(/^remember /i, "");
+      addFact(fact);
+      this.speak(`Got it. I'll remember that ${fact}.`);
+    } else if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
+      const memory = loadMemory();
+      if (memory.facts.length === 0) {
+        this.speak("I don't have anything stored about you yet.");
+      } else {
+        this.speak(`Here's what I remember: ${memory.facts.join(". ")}.`);
+      }
+    } else if (cmd.includes("forget everything") || cmd.includes("clear your memory")) {
+      clearMemory();
+      this.speak("I've cleared everything I remembered.");
+    } else if (cmd.includes("weather")) {
       this.speak("Checking the weather now.");
       void this.getWeather();
     } else if (cmd.includes("open youtube")) {
