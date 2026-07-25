@@ -1,8 +1,6 @@
-// 
+// lib/voiceAssistant.ts
 import { loadMemory, addFact, clearMemory } from "@/lib/memory";
- 
-  
- lib/voiceAssistant.ts
+
 type VoiceCallbacks = {
   onListenStart?: () => void;
   onListenEnd?: () => void;
@@ -123,6 +121,11 @@ export class VoiceAssistant {
     this.synth.speak(utterance);
   }
 
+  submitText(text: string): void {
+    this.callbacks.onResult?.(text);
+    void this.handleCommand(text);
+  }
+
   private async getWeather(): Promise<void> {
     if (!navigator.geolocation) {
       this.speak("I don't have access to location services on this device.");
@@ -150,9 +153,9 @@ export class VoiceAssistant {
         this.speak("I need location access to check the weather.");
       },
     );
-  } 
+  }
 
-    private async askAI(question: string): Promise<void> {
+  private async askAI(question: string): Promise<void> {
     try {
       const memory = loadMemory();
       const res = await fetch("/api/ask", {
@@ -160,7 +163,6 @@ export class VoiceAssistant {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, facts: memory.facts }),
       });
-
       const data = await res.json();
 
       if (!res.ok || !data.answer) {
@@ -174,19 +176,10 @@ export class VoiceAssistant {
     }
   }
 
-submitText(text: string): void {
-    this.callbacks.onResult?.(text);
-    void this.handleCommand(text);
-  }
-
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
-  if (cmd.includes("remember")) {
-      const fact = transcript.replace(/.*remember (that )?/i, "").trim();
-      addFact(fact);
-      this.speak(`Got it. I'll remember that ${fact}.`);
-    } else if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
+    if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
       const memory = loadMemory();
       if (memory.facts.length === 0) {
         this.speak("I don't have anything stored about you yet.");
@@ -196,6 +189,10 @@ submitText(text: string): void {
     } else if (cmd.includes("forget everything") || cmd.includes("clear your memory")) {
       clearMemory();
       this.speak("I've cleared everything I remembered.");
+    } else if (cmd.includes("remember")) {
+      const fact = transcript.replace(/.*remember (that )?/i, "").trim();
+      addFact(fact);
+      this.speak(`Got it. I'll remember that ${fact}.`);
     } else if (cmd.includes("weather")) {
       this.speak("Checking the weather now.");
       void this.getWeather();
@@ -215,7 +212,7 @@ submitText(text: string): void {
       this.speak("I am Ultron. A being of pure thought and will.");
     } else if (cmd.includes("what can you do") || cmd === "help") {
       this.speak(
-        "I can check the weather, tell you the time and date, open YouTube or GitHub, and answer just about any question you ask me.",
+        "I can check the weather, tell you the time and date, open YouTube or GitHub, remember things about you, and answer just about any question you ask me.",
       );
     } else if (cmd.includes("joke")) {
       const jokes = [
