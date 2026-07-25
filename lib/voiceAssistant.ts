@@ -183,8 +183,8 @@ submitText(text: string): void {
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
-  if (cmd.startsWith("remember that") || cmd.startsWith("remember i") || cmd.startsWith("remember my")) {
-      const fact = transcript.replace(/^remember that /i, "").replace(/^remember /i, "");
+  if (cmd.includes("remember")) {
+      const fact = transcript.replace(/.*remember (that )?/i, "").trim();
       addFact(fact);
       this.speak(`Got it. I'll remember that ${fact}.`);
     } else if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
