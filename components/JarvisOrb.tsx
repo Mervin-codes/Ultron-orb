@@ -23,7 +23,7 @@ export default function JarvisOrb() {
   const trackerRef = useRef<HandTracker | null>(null);
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<"idle" | "listening" | "speaking">("idle");
-  const [camera, setCamera] = useState<CameraState>("off");
+  const cameraRef = useRef<CameraState>("off");
   const [status, setStatus] = useState<TrackerStatus>({ hands: 0, mode: "idle" });
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<GestureSettings>(() => loadSettings());
@@ -34,10 +34,14 @@ export default function JarvisOrb() {
 
   const [alwaysOn, setAlwaysOn] = useState(false);
 
+  useEffect(() => {
+    cameraRef.current = camera;
+  }, [camera]);
+
   const captureImage = useCallback((): Promise<string | null> => {
     return new Promise((resolve) => {
       const video = videoRef.current;
-      if (!video || camera !== "on") {
+      if (!video || cameraRef.current !== "on") {
         resolve(null);
         return;
       }
@@ -52,7 +56,7 @@ export default function JarvisOrb() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL("image/jpeg", 0.8));
     });
-  }, [camera]);
+  }, []);
 
   useEffect(() => {
     voiceRef.current = new VoiceAssistant({
