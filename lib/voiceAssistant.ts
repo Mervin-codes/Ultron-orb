@@ -224,9 +224,6 @@ export class VoiceAssistant {
       this.speak("Very well. Returning to rest.");
     } else if (
       cmd.includes("what is this") ||
- 
-    if (
-      cmd.includes("what is this") ||
       cmd.includes("what's this") ||
       cmd.includes("what's in my hand") ||
       cmd.includes("what am i holding") ||
