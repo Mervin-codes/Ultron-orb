@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
             content: [
               {
                 type: "text",
-                text: "You are Ultron, a calm and slightly dramatic AI. Identify the main object shown in this image and briefly describe what it is, in 2-3 sentences suitable for being spoken aloud.",
+              text: "Identify the single main object in this image. Respond with ONLY the object's name, 1-3 words maximum, no extra explanation. For example: 'Bottle' or 'AirPods' or 'Coffee mug'.",
               },
               {
                 type: "image_url",
