@@ -6,8 +6,9 @@ type VoiceCallbacks = {
   onListenEnd?: () => void;
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
-  onResult?: (transcript: string) => void;
+ onResult?: (transcript: string) => void;
   onReply?: (text: string) => void;
+  onCaptureImage?: () => Promise<string | null>;
 };
 
 const WEATHER_CODES: Record<number, string> = {
@@ -154,6 +155,38 @@ export class VoiceAssistant {
       },
     );
   }
+  private async identifyObject(): Promise<void> {
+    if (!this.callbacks.onCaptureImage) {
+      this.speak("I don't have camera access set up for that.");
+      return;
+    }
+
+    const image = await this.callbacks.onCaptureImage();
+    if (!image) {
+      this.speak("Please turn on gestures so I can see through the camera first.");
+      return;
+    }
+
+    this.speak("Let me take a look.");
+
+    try {
+      const res = await fetch("/api/vision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.answer) {
+        this.speak("I couldn't identify that.");
+        return;
+      }
+
+      this.speak(data.answer);
+    } catch {
+      this.speak("Something went wrong analyzing the image.");
+    }
+  }  
 
   private async askAI(question: string): Promise<void> {
     try {
@@ -179,7 +212,15 @@ export class VoiceAssistant {
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
-    if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
+    if (
+      cmd.includes("what is this") ||
+      cmd.includes("what's this") ||
+      cmd.includes("what's in my hand") ||
+      cmd.includes("what am i holding") ||
+      cmd.includes("identify this")
+    ) {
+      void this.identifyObject();
+    } else if (cmd.includes("what do you remember") || cmd.includes("what do you know about me")) {
       const memory = loadMemory();
       if (memory.facts.length === 0) {
         this.speak("I don't have anything stored about you yet.");

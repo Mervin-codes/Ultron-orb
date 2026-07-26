@@ -34,6 +34,26 @@ export default function JarvisOrb() {
 
   const [alwaysOn, setAlwaysOn] = useState(false);
 
+  const captureImage = useCallback((): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const video = videoRef.current;
+      if (!video || camera !== "on") {
+        resolve(null);
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(null);
+        return;
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
+    });
+  }, [camera]);
+
   useEffect(() => {
     voiceRef.current = new VoiceAssistant({
       onListenStart: () => setVoiceStatus("listening"),
@@ -47,11 +67,13 @@ export default function JarvisOrb() {
         sceneRef.current?.setSpeaking(false);
       },
       onReply: (text) => setReplyText(text),
+      onCaptureImage: captureImage,
     });
     return () => {
       voiceRef.current?.disableAlwaysListening();
     };
   }, []);
+       
 
   const handleTalk = useCallback(() => {
     if (!alwaysOn) {
