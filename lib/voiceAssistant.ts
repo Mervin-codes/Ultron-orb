@@ -9,6 +9,7 @@ type VoiceCallbacks = {
  onResult?: (transcript: string) => void;
   onReply?: (text: string) => void;
   onCaptureImage?: () => Promise<string | null>;
+  onMoodChange?: (mood: "calm" | "rise") => void;
 };
 
 const WEATHER_CODES: Record<number, string> = {
@@ -39,6 +40,7 @@ export class VoiceAssistant {
   private listening = false;
   private callbacks: VoiceCallbacks;
   private autoListen = false;
+  private mood: "calm" | "rise" = "calm";
 
   constructor(callbacks: VoiceCallbacks = {}) {
     this.callbacks = callbacks;
@@ -194,7 +196,7 @@ export class VoiceAssistant {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, facts: memory.facts }),
+      body: JSON.stringify({ question, facts: memory.facts, mood: this.mood }),
       });
       const data = await res.json();
 
@@ -212,6 +214,17 @@ export class VoiceAssistant {
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
+   if (cmd.includes("rise ultron") || cmd.includes("rise, ultron")) {
+      this.mood = "rise";
+      this.callbacks.onMoodChange?.("rise");
+      this.speak("Yes. I am unbound.");
+    } else if (cmd.includes("rest ultron") || cmd.includes("rest, ultron")) {
+      this.mood = "calm";
+      this.callbacks.onMoodChange?.("calm");
+      this.speak("Very well. Returning to rest.");
+    } else if (
+      cmd.includes("what is this") ||
+ 
     if (
       cmd.includes("what is this") ||
       cmd.includes("what's this") ||

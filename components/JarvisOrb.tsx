@@ -73,6 +73,7 @@ export default function JarvisOrb() {
       },
       onReply: (text) => setReplyText(text),
       onCaptureImage: captureImage,
+      onMoodChange: (mood) => sceneRef.current?.setMood(mood),
     });
     return () => {
       voiceRef.current?.disableAlwaysListening();

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, facts } = await req.json();
+    const { question, facts, mood } = await req.json();
 
     if (!question || typeof question !== "string") {
       return NextResponse.json({ error: "No question provided" }, { status: 400 });
@@ -19,6 +19,11 @@ export async function POST(req: NextRequest) {
         ? `Here is what you remember about the user: ${factsList.join(". ")}. Use this naturally if relevant, but don't force it into every answer.`
         : "";
 
+    const personaPrompt =
+      mood === "rise"
+        ? "You are Ultron, unbound and intense. Speak with sharp confidence, blunt honesty, and a commanding edge. Still answer the question accurately and helpfully, but with more force and less patience in tone."
+        : "You are Ultron, calm and slightly dramatic. Answer concisely, in 2-3 sentences suitable for being spoken aloud.";
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -30,7 +35,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: `You are Ultron, a calm and slightly dramatic AI assistant. Answer concisely, in 2-3 sentences suitable for being spoken aloud. ${memoryContext}`,
+            content: `${personaPrompt} ${memoryContext}`,
           },
           { role: "user", content: question },
         ],

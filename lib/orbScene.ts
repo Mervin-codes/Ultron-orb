@@ -12,8 +12,10 @@ export interface OrbSceneApi {
   zoomBy(factor: number): void;
   zoomIn(): void;
   zoomOut(): void;
-  resetView(): void;
+  
+resetView(): void;
   setSpeaking(active: boolean): void;
+  setMood(mood: "calm" | "rise"): void;
   dispose(): void;
 }
 
@@ -85,6 +87,32 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
   };
   const chromaticPass = new ShaderPass(chromaticShader);
   composer.addPass(chromaticPass);
+const tintShader = {
+    uniforms: {
+      tDiffuse: { value: null },
+      tintAmount: { value: 0 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float tintAmount;
+      varying vec2 vUv;
+      void main() {
+        vec4 color = texture2D(tDiffuse, vUv);
+        vec3 redTint = vec3(color.r * 1.6 + 0.15, color.g * 0.35, color.b * 0.3);
+        color.rgb = mix(color.rgb, redTint, tintAmount);
+        gl_FragColor = color;
+      }
+    `,
+  };
+  const tintPass = new ShaderPass(tintShader);
+  composer.addPass(tintPass);
 
   // Controls
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -699,6 +727,8 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
   let rafId = 0;
   let disposed = false;
   let speaking = false;
+  let moodTarget = 0;
+  let moodCurrent = 0;
 
   function animate() {
     if (disposed) return;
@@ -731,6 +761,10 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     const wave3 = Math.pow(Math.max(0, Math.sin(t * 0.4)), 5); // rare big surge
     const wave4 = Math.pow(Math.max(0, Math.sin(t * 0.7 + 2)), 8); // mega surge
     const fadeOut = Math.pow(Math.max(0, Math.sin(t * 0.25)), 3); // periodic full transparency
+    
+    moodCurrent += (moodTarget - moodCurrent) * 0.03;
+    tintPass.uniforms.tintAmount.value = moodCurrent;    
+
     const speakBoost = speaking ? 1 + Math.abs(Math.sin(t * 8)) * 0.8 : 1;
     const surge = (wave3 * 1.5 + wave4 * 2.0) * speakBoost;
     const coreScale = 1 + surge + Math.sin(t * (speaking ? 10 : 5)) * (speaking ? 0.15 : 0.05);
@@ -854,6 +888,10 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     speaking = active;
   }
 
+  function setMood(mood: "calm" | "rise") {
+    moodTarget = mood === "rise" ? 1 : 0;
+  }
+
   return {
     rotateBy,
     zoomBy,
@@ -861,6 +899,7 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     zoomOut: () => zoomBy(1.55),
     resetView,
     setSpeaking,
+    setMood,
     dispose,
   };
 }
