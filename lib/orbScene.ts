@@ -13,6 +13,7 @@ export interface OrbSceneApi {
   zoomIn(): void;
   zoomOut(): void;
   resetView(): void;
+  setSpeaking(active: boolean): void;
   dispose(): void;
 }
 
@@ -697,6 +698,7 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
   let flickerTimer = 0;
   let rafId = 0;
   let disposed = false;
+  let speaking = false;
 
   function animate() {
     if (disposed) return;
@@ -729,8 +731,9 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     const wave3 = Math.pow(Math.max(0, Math.sin(t * 0.4)), 5); // rare big surge
     const wave4 = Math.pow(Math.max(0, Math.sin(t * 0.7 + 2)), 8); // mega surge
     const fadeOut = Math.pow(Math.max(0, Math.sin(t * 0.25)), 3); // periodic full transparency
-    const surge = wave3 * 1.5 + wave4 * 2.0;
-    const coreScale = 1 + surge + Math.sin(t * 5) * 0.05;
+    const speakBoost = speaking ? 1 + Math.abs(Math.sin(t * 8)) * 0.8 : 1;
+    const surge = (wave3 * 1.5 + wave4 * 2.0) * speakBoost;
+    const coreScale = 1 + surge + Math.sin(t * (speaking ? 10 : 5)) * (speaking ? 0.15 : 0.05);
     coreSphere.scale.setScalar(coreScale);
     // Opacity: mostly very low (0-0.15), sometimes fully transparent, brief bright on surge
     const coreOpacity = Math.max(
@@ -847,12 +850,17 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     renderer.domElement.remove();
   }
 
+  function setSpeaking(active: boolean) {
+    speaking = active;
+  }
+
   return {
     rotateBy,
     zoomBy,
     zoomIn: () => zoomBy(0.65),
     zoomOut: () => zoomBy(1.55),
     resetView,
+    setSpeaking,
     dispose,
   };
 }

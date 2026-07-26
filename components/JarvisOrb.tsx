@@ -38,8 +38,14 @@ export default function JarvisOrb() {
     voiceRef.current = new VoiceAssistant({
       onListenStart: () => setVoiceStatus("listening"),
       onListenEnd: () => setVoiceStatus("idle"),
-      onSpeakStart: () => setVoiceStatus("speaking"),
-      onSpeakEnd: () => setVoiceStatus("idle"),
+      onSpeakStart: () => {
+        setVoiceStatus("speaking");
+        sceneRef.current?.setSpeaking(true);
+      },
+      onSpeakEnd: () => {
+        setVoiceStatus("idle");
+        sceneRef.current?.setSpeaking(false);
+      },
       onReply: (text) => setReplyText(text),
     });
     return () => {
