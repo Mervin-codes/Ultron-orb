@@ -22,7 +22,8 @@ export default function JarvisOrb() {
   const sceneRef = useRef<OrbSceneApi | null>(null);
   const trackerRef = useRef<HandTracker | null>(null);
   const voiceRef = useRef<VoiceAssistant | null>(null);
-  const [voiceStatus, setVoiceStatus] = useState<"idle" | "listening" | "speaking">("idle");
+ const [voiceStatus, setVoiceStatus] = useState<"idle" | "listening" | "speaking">("idle");
+  const [camera, setCamera] = useState<CameraState>("off");
   const cameraRef = useRef<CameraState>("off");
   const [status, setStatus] = useState<TrackerStatus>({ hands: 0, mode: "idle" });
   const [error, setError] = useState<string | null>(null);
