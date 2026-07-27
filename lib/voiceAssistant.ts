@@ -214,7 +214,7 @@ export class VoiceAssistant {
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
 
-   if (cmd.includes("rise ultron") || cmd.includes("rise, ultron")) {
+ if (cmd.includes("wake up ultron") || cmd.includes("wakeup ultron") || cmd.includes("wake, ultron")) {
       this.mood = "rise";
       this.callbacks.onMoodChange?.("rise");
       this.speak("Yes. I am unbound.");
