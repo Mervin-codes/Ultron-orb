@@ -243,8 +243,6 @@ if (cmd.startsWith("search for") || cmd.startsWith("search") || cmd.startsWith("
         this.speak("What would you like me to search for?");
       }
     } else if (cmd.includes("wake up ultron") || cmd.includes("wakeup ultron") || cmd.includes("wake, ultron")) {
-
- if (cmd.includes("wake up ultron") || cmd.includes("wakeup ultron") || cmd.includes("wake, ultron")) {
       this.mood = "rise";
       this.callbacks.onMoodChange?.("rise");
       this.speak("Yes. I am unbound.");
