@@ -3,6 +3,7 @@ const STORAGE_KEY = "ultron-memory";
 
 export interface Memory {
   facts: string[];
+  name?: string;
 }
 
 export function loadMemory(): Memory {
@@ -28,6 +29,12 @@ export function saveMemory(memory: Memory) {
 export function addFact(fact: string) {
   const memory = loadMemory();
   memory.facts.push(fact);
+
+  const nameMatch = fact.match(/my name is (\w+)/i);
+  if (nameMatch) {
+    memory.name = nameMatch[1];
+  }
+
   saveMemory(memory);
 }
 

@@ -190,6 +190,26 @@ export class VoiceAssistant {
     }
   }  
 
+ private async webSearch(query: string): Promise<void> {
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.answer) {
+        this.speak("I couldn't find anything on that.");
+        return;
+      }
+
+      this.speak(data.answer);
+    } catch {
+      this.speak("Something went wrong searching the web.");
+    }
+  }
+
   private async askAI(question: string): Promise<void> {
     try {
       const memory = loadMemory();
@@ -213,6 +233,16 @@ export class VoiceAssistant {
 
   private async handleCommand(transcript: string): Promise<void> {
     const cmd = transcript.toLowerCase();
+
+if (cmd.startsWith("search for") || cmd.startsWith("search") || cmd.startsWith("look up") || cmd.startsWith("google")) {
+      const query = transcript.replace(/^(search for|search|look up|google)\s*/i, "").trim();
+      if (query) {
+        this.speak("Searching now.");
+        void this.webSearch(query);
+      } else {
+        this.speak("What would you like me to search for?");
+      }
+    } else if (cmd.includes("wake up ultron") || cmd.includes("wakeup ultron") || cmd.includes("wake, ultron")) {
 
  if (cmd.includes("wake up ultron") || cmd.includes("wakeup ultron") || cmd.includes("wake, ultron")) {
       this.mood = "rise";
@@ -287,7 +317,8 @@ export class VoiceAssistant {
 
   enableAlwaysListening() {
     this.autoListen = true;
-    this.speak("How can I help you?");
+    const memory = loadMemory();
+    this.speak(memory.name ? `How can I help you, ${memory.name}?` : "How can I help you?");
   }
 
   disableAlwaysListening() {
