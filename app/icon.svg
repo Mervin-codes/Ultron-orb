@@ -20,12 +20,10 @@
 <stop offset="100%" stop-color="#050a0c"/>
 </radialGradient>
 </defs>
-
 <rect width="240" height="240" rx="28" fill="#050a0c"/>
 <circle cx="120" cy="120" r="118" fill="url(#bloom)"/>
 <circle cx="120" cy="120" r="100" fill="url(#bg3)"/>
 <circle cx="120" cy="120" r="99" fill="none" stroke="#2a4a52" stroke-width="1.5"/>
-
 <g transform="translate(120,120) rotate(8)">
 <path d="M0,-80 L29,-59 L15,-21 L-13,-21 L-29,-59 Z" fill="url(#bladeGrad)" stroke="#23f0ff" stroke-width="1.5" stroke-opacity="0.7"/>
 <path d="M75,-26 L76,13 L38,23 L22,-8 L39,-31 Z" fill="url(#bladeGrad)" stroke="#7cd9ff" stroke-width="1.5" stroke-opacity="0.6"/>
@@ -34,13 +32,10 @@
 <path d="M-76,-26 L-39,-31 L-22,-8 L-38,23 L-76,13 Z" fill="url(#bladeGrad)" stroke="#23f0ff" stroke-width="1.5" stroke-opacity="0.65"/>
 <path d="M-29,-59 L0,-80 L29,-59 M29,-59 L75,-26 M76,13 L48,65 M14,82 L-15,65 M-76,42 L-60,4 M-76,-26 L-39,-31" fill="none" stroke="#e8f9ff" stroke-width="0.75" stroke-opacity="0.35"/>
 </g>
-
 <circle cx="120" cy="120" r="23" fill="url(#pupil3)"/>
 <path d="M110,109 A14,14 0 0 1 130,109" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7" stroke-linecap="round"/>
 <circle cx="120" cy="120" r="6" fill="#ffffff"/>
-
 <circle cx="120" cy="120" r="112" fill="none" stroke="#23f0ff" stroke-width="0.75" stroke-opacity="0.25" stroke-dasharray="2 7"/>
-
 <circle cx="196" cy="60" r="3.5" fill="#ffffff"/>
 <circle cx="196" cy="60" r="8" fill="#23f0ff" opacity="0.35"/>
 <path d="M172,120 A124,124 0 0 1 196,60" fill="none" stroke="#23f0ff" stroke-width="0.75" stroke-opacity="0.3" stroke-dasharray="1 4"/>
